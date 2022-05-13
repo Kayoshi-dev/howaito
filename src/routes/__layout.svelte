@@ -1,4 +1,6 @@
 <script>
+  import ToastManager from "../components/toast/ToastManager.svelte";
+
   import "../app.css";
 
   let isNightMode = false;
@@ -134,4 +136,9 @@
   </div>
 </nav>
 
-<slot />
+<main id="main-container" class="relative">
+  <div class="absolute top-2 right-2 flex flex-col-reverse">
+    <ToastManager />
+  </div>
+  <slot />
+</main>
