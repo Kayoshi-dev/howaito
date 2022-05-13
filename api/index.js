@@ -15,6 +15,8 @@ const io = new Server(httpServer, {
 });
 
 io.on("connection", (socket) => {
+  const drawing = "";
+
   socket.join(socket.handshake.query["uuid"]);
   socket.broadcast.to(socket.handshake.query["uuid"]).emit("newUserConnection");
 
@@ -23,7 +25,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("isDrawing", (arg) => {
-    console.log(arg);
     socket.broadcast
       .to(socket.handshake.query["uuid"])
       .emit("userIsDrawing", arg);

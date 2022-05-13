@@ -11,6 +11,6 @@
   });
 </script>
 
-{#each toastList as toastData}
+{#each toastList as toastData, index (toastData.id)}
   <Toast {toastData} />
 {/each}

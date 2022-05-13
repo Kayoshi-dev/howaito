@@ -1,28 +1,21 @@
 <script>
   // @ts-nocheck
-  import { onDestroy } from "svelte";
+  import { createEventDispatcher, onDestroy } from "svelte";
   import { CrossIcon, CheckIcon, UsersIcon } from "../icons/index";
-  import { toasts } from "../../stores/ToastStore/stores";
   import { fly, fade } from "svelte/transition";
+  import { toasts } from "../../stores/ToastStore/stores";
 
   export let toastData;
-  let timeOut;
 
-  // Strange bug here. Maybe a condition race, will have to investigate
-  timeOut = setTimeout(() => {
-    toasts.update((toasts) =>
-      toasts.filter((toast) => toast.id !== toastData.id)
-    );
+  // Bad memory, never forget to give a key when you {# each #}
+  setTimeout(() => {
+    toasts.update((toasts) => toasts.filter(toast => toast.id !== toastData.id));
   }, 3000);
 
   const onCloseToast = (id) => {
-    toasts.update((toasts) => toasts.filter((toast) => toast.id !== id));
-  };
-
-  onDestroy(() => {
-    timeOut = clearTimeout(timeOut);
-  });
-
+    toasts.update((toasts) => toasts.filter(toast => toast.id !== id));
+  }
+  
   const notificationStyle = {
     success: [
       "text-green-500",
