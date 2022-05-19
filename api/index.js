@@ -15,7 +15,20 @@ const io = new Server(httpServer, {
 });
 
 io.on("connection", (socket) => {
+  const drawing = "";
+
   socket.join(socket.handshake.query["uuid"]);
+  socket.broadcast.to(socket.handshake.query["uuid"]).emit("newUserConnection");
+
+  socket.on("moveTo", (arg) => {
+    socket.broadcast.to(socket.handshake.query["uuid"]).emit("setMoveTo", arg);
+  });
+
+  socket.on("isDrawing", (arg) => {
+    socket.broadcast
+      .to(socket.handshake.query["uuid"])
+      .emit("userIsDrawing", arg);
+  });
 });
 
 httpServer.listen(8000);
