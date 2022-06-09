@@ -137,7 +137,7 @@
 </nav>
 
 <main id="main-container" class="relative">
-  <div class="absolute top-2 right-2 flex flex-col-reverse">
+  <div class="absolute top-2 right-2 flex flex-col-reverse overflow-hidden">
     <ToastManager />
   </div>
   <slot />

@@ -8,17 +8,19 @@
 
   export const prerender = true;
 
-  let canvasCtx;
   let isDrawing = false;
   let socket;
   const from = {};
+  let canvas, canvasCtx, canvasCoords;
 
   onMount(() => {
+    canvas = document.getElementById("myCollaborativeCanvas");
+    canvasCtx = canvas.getContext("2d");
+    canvasCoords = canvas.getBoundingClientRect();
+
     socket = io("http://localhost:8000", {
       query: `uuid=${$page.params.uuid}`,
     });
-
-    const canvas = document.getElementById("myCollaborativeCanvas");
 
     socket.on("connect", () => {
       showToast("Connected to the server.", "success", { icon: "check" });
@@ -38,7 +40,7 @@
     });
 
     socket.on("userIsDrawing", (arg) => {
-      canvasCtx.strokeStyle = canvasCtx.beginPath();
+      canvasCtx.beginPath();
       canvasCtx.moveTo(from.x, from.y);
       canvasCtx.lineTo(arg.x, arg.y);
       canvasCtx.stroke();
@@ -47,20 +49,12 @@
       from.y = arg.y;
     });
 
-    canvasCtx = document
-      .getElementById("myCollaborativeCanvas")
-      ?.getContext("2d");
-
     canvas.width = document.body.clientWidth;
-    canvas.height = document.body.clientHeight;
+    canvas.height = document.body.clientHeight - 80;
   });
 
   function startDrawing(e) {
-    const canvas = document
-      .getElementById("myCollaborativeCanvas")
-      ?.getBoundingClientRect();
-
-    const normalizedCoords = { x: e.x - canvas?.left, y: e.y - canvas?.top };
+    const normalizedCoords = { x: e.x - canvasCoords?.left, y: e.y - canvasCoords?.top };
 
     canvasCtx.beginPath();
     canvasCtx.moveTo(normalizedCoords.x, normalizedCoords.y);
@@ -74,14 +68,10 @@
 
   function draw(e) {
     if (isDrawing) {
-      const canvas = document
-        .getElementById("myCollaborativeCanvas")
-        ?.getBoundingClientRect();
-
-      canvasCtx.lineTo(e.x - canvas?.left, e.y - canvas?.top);
+      canvasCtx.lineTo(e.x - canvasCoords?.left, e.y - canvasCoords?.top);
       canvasCtx.stroke();
 
-      socket.emit("isDrawing", { x: e.x - canvas?.left, y: e.y - canvas?.top });
+      socket.emit("isDrawing", { x: e.x - canvasCoords?.left, y: e.y - canvasCoords?.top });
     }
   }
 
@@ -92,30 +82,35 @@
   function decreaseStrokeWidth() {
     canvasCtx.lineWidth--;
   }
+
+  let oldTitle;
+
+  function editTitle(e) {
+    oldTitle = e.target.value;
+    e.target.value = "";
+    e.target.placeholder = "Enter a title...";
+  }
+
+  function saveTitle(e) {
+    if(e.target.value) {
+      socket.emit("saveTitle", e.target.value);
+    } else {
+      e.target.value = oldTitle;
+    }
+  }
+
 </script>
 
 <div>
-  <div>
-    <h1 class="text-2xl font-bold dark:text-white">New Whiteboard</h1>
+  <form on:submit|preventDefault>
+    <input class="text-2xl font-bold dark:bg-gray-800 dark:text-white" id="titleInput" value="New Whiteboard" on:click={editTitle} on:blur={saveTitle} />
+  </form>
 
-    <canvas
-      height="500px"
-      width="500px"
-      id="myCollaborativeCanvas"
-      class="border-2"
-      on:mousedown={startDrawing}
-      on:mousemove={draw}
-    />
-
-    <button
-      on:click={increaseStrokeWidth}
-      class="bg-blue-700 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-blue-50 text-white font-semibold py-2 px-4 rounded-lg sm:w-auto dark:bg-sky-500 dark:highlight-white/20 dark:hover:bg-sky-400"
-      >+</button
-    >
-    <button
-      on:click={decreaseStrokeWidth}
-      class="bg-blue-700 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-blue-50 text-white font-semibold py-2 px-5 rounded-lg sm:w-auto dark:bg-sky-500 dark:highlight-white/20 dark:hover:bg-sky-400"
-      >-</button
-    >
-  </div>
+  <canvas
+    height="500px"
+    width="500px"
+    id="myCollaborativeCanvas"
+    on:mousedown={startDrawing}
+    on:mouseup={() => (isDrawing = false)}
+    on:mousemove={draw}></canvas>
 </div>

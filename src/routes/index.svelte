@@ -1,4 +1,4 @@
-<script>
+ <script>
   import { v4 as uuidv4 } from "uuid";
 
   import JoinWhiteboardModal from "../components/modals/JoinWhiteboardModal.svelte";
